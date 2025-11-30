@@ -2,6 +2,6 @@ dist
 node_modules
 .vscode-test/
 *.vsix
-types
+# types
 sync_tools.jsonc
 sync_config.jsonc
