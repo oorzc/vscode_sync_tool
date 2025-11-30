@@ -1,0 +1,495 @@
+{
+  "name": "ssh-tools",
+  "displayName": "FTP/SFTP/SSH Sync Tool",
+  "publisher": "oorzc",
+  "description": "%SyncTools.title%",
+  "version": "0.5.0",
+  "icon": "static/logo_new.png",
+  "engines": {
+    "vscode": "^1.73.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oorzc/vscode_sync_tool"
+  },
+  "keywords": [
+    "ftp",
+    "ssh",
+    "sftp",
+    "upload",
+    "client",
+    "sync",
+    "上传",
+    "上传工具"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "l10n": "./l10n",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "Log",
+        "aliases": [
+          "log"
+        ],
+        "extensions": [
+          ".log"
+        ],
+        "configuration": "./log/log.configuration.json",
+        "mimetypes": [
+          "log",
+          "text/log",
+          "text/x-log",
+          "text/x-code-output",
+          "x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "Log",
+        "scopeName": "code.log",
+        "path": "./log/log.tmLanguage"
+      }
+    ],
+    "commands": [
+      {
+        "command": "sync_tools.outputShow",
+        "title": "%SyncTools.displayOutput%",
+        "icon": "$(output)"
+      },
+      {
+        "command": "sync_tools.editConfig",
+        "title": "%SyncTools.editConfiguration%",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "sync_tools.openPluginSetting",
+        "title": "%SyncTools.extendedSettings%",
+        "icon": "$(settings-view-bar-icon)"
+      },
+      {
+        "command": "sync_tools.connect",
+        "title": "%SyncTools.connectToServer%",
+        "icon": "$(ports-view-icon)"
+      },
+      {
+        "command": "sync_tools.disconnect",
+        "title": "%SyncTools.disconnectTheServer%",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "sync_tools.openResource",
+        "title": "%SyncTools.openFile%"
+      },
+      {
+        "command": "sync_tools.uploadEntry",
+        "title": "%SyncTools.upload%",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "sync_tools.addConfig",
+        "title": "%SyncTools.add_config%",
+        "icon": "$(add)"
+      },
+      {
+        "command": "sync_tools.clearAllCache",
+        "title": "%SyncTools.clearAllCache%",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "sync_tools.clearAllLog",
+        "title": "%SyncTools.clearAllLogs%",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "sync_tools.clearCache",
+        "title": "%SyncTools.clearCache%",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "sync_tools.delete",
+        "title": "%SyncTools.delete%",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "sync_tools.addFile",
+        "title": "%SyncTools.newFile%",
+        "icon": "$(file-add)"
+      },
+      {
+        "command": "sync_tools.addFolder",
+        "title": "%SyncTools.newFolder%",
+        "icon": "$(file-directory-create)"
+      },
+      {
+        "command": "sync_tools.uploadFiles",
+        "title": "%SyncTools.upload%",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "sync_tools.uploadFilesByExplorer",
+        "title": "%SyncTools.upload%",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "sync_tools.downloadFile",
+        "title": "%SyncTools.download%",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "sync_tools.refreshEntry",
+        "title": "%SyncTools.refresh%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "sync_tools.compareFile",
+        "title": "%SyncTools.compare%",
+        "icon": "$(compare-changes)"
+      },
+      {
+        "command": "sync_tools.compareFileByExplorer",
+        "title": "%SyncTools.compare%",
+        "icon": "$(compare-changes)"
+      },
+      {
+        "command": "sync_tools.renameFile",
+        "title": "%SyncTools.rename%",
+        "icon": "$(notebook-edit)"
+      },
+      {
+        "command": "sync_tools.chmodFile",
+        "title": "%SyncTools.permission%",
+        "icon": "$(gist-private)"
+      },
+      {
+        "command": "sync_tools.deleteFile",
+        "title": "%SyncTools.delete%",
+        "icon": "$(notebook-delete-cell)"
+      },
+      {
+        "command": "sync_tools.pauseSync",
+        "title": "%SyncTools.pauseSync%",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "sync_tools.stopSync",
+        "title": "%SyncTools.pauseSync%",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "sync_tools.restartSync",
+        "title": "%SyncTools.restartSync%",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "sync_tools.closeAllClient",
+        "title": "%SyncTools.disconnectAllConnections%",
+        "icon": "$(diff-review-close)"
+      },
+      {
+        "command": "sync_tools.changeSecretKey",
+        "title": "%SyncTools.changeSecretKey%"
+      },
+      {
+        "command": "sync_tools.encrypt",
+        "title": "%SyncTools.encrypt%"
+      },
+      {
+        "command": "sync_tools.decrypt",
+        "title": "%SyncTools.decrypt%"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "sync_tools.addConfig",
+          "when": "view == 'asyncToolsView'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "sync_tools.editConfig",
+          "when": "view == 'asyncToolsView' && canEdit",
+          "group": "navigation@2"
+        },
+        {
+          "command": "sync_tools.openPluginSetting",
+          "when": "view == 'asyncToolsView'",
+          "group": "navigation@4"
+        },
+        {
+          "command": "sync_tools.clearAllLog",
+          "when": "view == 'asyncToolsView'"
+        },
+        {
+          "command": "sync_tools.clearAllCache",
+          "when": "view == 'asyncToolsView'"
+        },
+        {
+          "command": "sync_tools.closeAllClient",
+          "when": "view == 'asyncToolsView'"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sync_tools.connect",
+          "when": "view == 'asyncToolsView' && viewItem == 'tools_disconnect'",
+          "group": "inline@1"
+        },
+        {
+          "command": "sync_tools.disconnect",
+          "when": "view == 'asyncToolsView' && viewItem == 'tools_connect'",
+          "group": "inline@2"
+        },
+        {
+          "command": "sync_tools.uploadEntry",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_connect' || viewItem == 'tools_disconnect')",
+          "group": "inline@5"
+        },
+        {
+          "command": "sync_tools.pauseSync",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_sync')",
+          "group": "inline@6"
+        },
+        {
+          "command": "sync_tools.restartSync",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_sync_pause')",
+          "group": "inline@7"
+        },
+        {
+          "command": "sync_tools.stopSync",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_sync' || viewItem == 'tools_sync_pause')",
+          "group": "inline@8"
+        },
+        {
+          "command": "sync_tools.addFile",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "sync_tools.addFolder",
+          "when": "view == 'asyncToolsView' &&  (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "2_workspace@2"
+        },
+        {
+          "command": "sync_tools.uploadFiles",
+          "when": "view == 'asyncToolsView' &&  (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "3_workspace@1"
+        },
+        {
+          "command": "sync_tools.downloadFile",
+          "when": "view == 'asyncToolsView' &&  (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "3_workspace@2"
+        },
+        {
+          "command": "sync_tools.compareFile",
+          "when": "view == 'asyncToolsView' &&  viewItem =~ /^sync_file/",
+          "group": "3_workspace@3"
+        },
+        {
+          "command": "sync_tools.renameFile",
+          "when": "view == 'asyncToolsView' && (viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "4_workspace@1"
+        },
+        {
+          "command": "sync_tools.chmodFile",
+          "when": "view == 'asyncToolsView' && (viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "4_workspace@2"
+        },
+        {
+          "command": "sync_tools.deleteFile",
+          "when": "view == 'asyncToolsView' &&  (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "4_workspace@3"
+        },
+        {
+          "command": "sync_tools.clearCache",
+          "when": "view == 'asyncToolsView' && (viewItem == 'tools_connect' || viewItem == 'tools_disconnect')",
+          "group": "6_workspace@1"
+        },
+        {
+          "command": "sync_tools.refreshEntry",
+          "when": "view == 'asyncToolsView' &&  (viewItem == 'tools_connect' || viewItem =~ /^sync_folder/ || viewItem =~ /^sync_file/)",
+          "group": "7_workspace@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "submenu": "filemenu/sync_tools",
+          "group": "2_workspace@1"
+        }
+      ],
+      "filemenu/sync_tools": [
+        {
+          "command": "sync_tools.uploadFilesByExplorer",
+          "when": "explorerResourceIsFolder || !explorerResourceIsFolder",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "sync_tools.compareFileByExplorer",
+          "when": "!explorerResourceIsFolder",
+          "group": "2_workspace@2"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "filemenu/sync_tools",
+        "label": "FTP/SFTP/SSH Client"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sync_tools_explorer",
+          "title": "FTP/SFTP/SSH Sync",
+          "icon": "static/logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "sync_tools_explorer": [
+        {
+          "id": "asyncToolsView",
+          "name": "",
+          "icon": "static/logo.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "asyncToolsView",
+        "contents": "%SyncTools.config_desc%"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "FTP/SFTP/SSH Sync",
+      "properties": {
+        "SyncTools.gitignore": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%SyncTools.gitignore.description%"
+        },
+        "SyncTools.excludePath": {
+          "type": "array",
+          "default": [
+            ".git",
+            ".svn",
+            "**/.DS_Store",
+            "Thumbs.db",
+            ".idea",
+            "node_modules",
+            "runtime",
+            "sync_tools.jsonc"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "%SyncTools.excludePath.description%"
+        },
+        "SyncTools.proxyConfig": {
+          "type": "object",
+          "default": {
+            "proxyHost": "127.0.0.1",
+            "proxyPort": 7890,
+            "proxyUsername": "",
+            "proxyPassword": "",
+            "proxyType": 5
+          },
+          "markdownDescription": "%SyncTools.proxyConfig.description%"
+        },
+        "SyncTools.logShow": {
+          "type": "boolean",
+          "default": true,
+          "description": "%SyncTools.logShow%"
+        },
+        "SyncTools.confirmMoveOrUpload": {
+          "type": "boolean",
+          "default": true,
+          "description": "%SyncTools.confirmMoveOrUpload%"
+        },
+        "SyncTools.logNumberLimit": {
+          "type": "number",
+          "default": 500,
+          "description": "%SyncTools.logNumberLimit%"
+        },
+        "SyncTools.openFileSizeLimit": {
+          "type": "number",
+          "default": 5,
+          "description": "%SyncTools.openFileSizeLimit%"
+        },
+        "SyncTools.uploadTaskNumber": {
+          "type": "number",
+          "minimum": 1,
+          "default": 10,
+          "description": "%SyncTools.uploadTaskNumber%"
+        },
+        "SyncTools.uploadConcurrentLimit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3,
+          "description": "%SyncTools.uploadConcurrentLimit%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -watch -p ./",
+    "watch": "webpack --watch --mode development",
+    "package": "NODE_ENV=production webpack --mode production --devtool hidden-source-map",
+    "vscepackage": "npm run package && vsce package --no-dependencies",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "commit": "npm run package &&  git add . && git commit -m 'up'",
+    "major": "NODE_ENV=production npm run commit && vsce publish major --no-dependencies",
+    "minor": "NODE_ENV=production npm run commit && vsce publish minor --no-dependencies",
+    "patch": "NODE_ENV=production npm run commit && vsce publish patch --no-dependencies",
+    "web": "ovsx publish  --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/archiver": "^5.3.3",
+    "@types/async": "^3.2.16",
+    "@types/fs-extra": "^11.0.1",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "@types/ssh2": "^1.11.14",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "eslint": "^8.24.0",
+    "javascript-obfuscator": "^4.1.1",
+    "mocha": "^10.0.0",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.4",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0",
+    "webpack-obfuscator": "^3.5.1"
+  },
+  "dependencies": {
+    "archiver": "^6.0.1",
+    "async": "^3.2.4",
+    "async-mutex": "^0.5.0",
+    "basic-ftp-proxy": "^5.0.5-5",
+    "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
+    "concat-stream": "^2.0.0",
+    "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.10",
+    "fs-extra": "^11.2.0",
+    "is-directory": "^0.3.1",
+    "jsonc-parser": "^3.3.1",
+    "minimatch": "^9.0.4",
+    "progress-stream": "^2.0.0",
+    "promise-retry": "^2.0.1",
+    "socks": "^2.8.3",
+    "ssh2": "^1.14.0",
+    "strip-json-comments": "^5.0.1",
+    "uuid": "^11.0.3"
+  }
+}

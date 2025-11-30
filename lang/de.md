@@ -7,19 +7,19 @@
 ## 🎉 Unterstützte Sprachen
 
 <h3 align="center">
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/en.md">English</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/zh.md">简体中文</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/zh-tw.md">繁体中文</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/es.md">Español</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/fr.md">Français</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/de.md">Deutsch</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/it.md">Italiano</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ko.md">한국어</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/pt.md">Português</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ru.md">Pусский</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/tr.md">Türkçe</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/pl.md">Polski</a> |
-    <a href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ja.md">日本語</a> 
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/en.md">English</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/zh.md">简体中文</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/zh-tw.md">繁体中文</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/es.md">Español</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/fr.md">Français</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/de.md">Deutsch</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/it.md">Italiano</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ko.md">한국어</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/pt.md">Português</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ru.md">Pусский</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/tr.md">Türkçe</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/pl.md">Polski</a> |
+    <a target="_blank" href="https://github.com/oorzc/vscode_sync_tool/blob/main/lang/ja.md">日本語</a> 
 </h3>
 
 ## ✨ Plugin-Funktionen
