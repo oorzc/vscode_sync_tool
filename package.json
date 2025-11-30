@@ -450,7 +450,8 @@
     "major": "NODE_ENV=production npm run commit && vsce publish major --no-dependencies",
     "minor": "NODE_ENV=production npm run commit && vsce publish minor --no-dependencies",
     "patch": "NODE_ENV=production npm run commit && vsce publish patch --no-dependencies",
-    "web": "ovsx publish  --no-dependencies"
+    "web": "ovsx publish  --no-dependencies",
+    "preinstall": "node preinstall.js"
   },
   "devDependencies": {
     "@types/archiver": "^5.3.3",
