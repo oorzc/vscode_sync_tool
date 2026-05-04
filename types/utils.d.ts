@@ -13,6 +13,9 @@ export declare const showInformationMessage: (msg: string, confirmText?: string,
  * 获取根路径
  */
 export declare function getRootPath(file?: string): string;
+export declare function getLocalRootPath(config?: Partial<DeployConfigItem>, file?: string): string;
+export declare function getRelativePathFromLocalRoot(config: Partial<DeployConfigItem> | undefined, targetPath: string): string | null;
+export declare function getRemotePathFromLocal(config: Partial<DeployConfigItem>, targetPath: string): string | null;
 /**
  * 语言字符
  */
@@ -34,7 +37,7 @@ export declare const getAllFiles: (dir: string, is_ignore?: boolean, ignore_arr?
  * @returns
  */
 export declare const getAllowFiles: (config: FileTransferConfigItem, file: string, view?: boolean) => Promise<false | string[]>;
-export declare const isIgnore: (ignore_arr: string[] | undefined, file: string, flag?: boolean) => Promise<boolean>;
+export declare const isIgnore: (ignore_arr: string[] | undefined, file: string, flag?: boolean, basePath?: string) => Promise<boolean>;
 export declare const getIgnoreConfig: (config: FileTransferConfigItem, file?: string, view?: boolean) => any[] | Promise<string[]>;
 export declare const toArray: (obj: {
     [x: string]: any;

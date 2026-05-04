@@ -5,7 +5,7 @@ import * as vscode from "vscode"
 import { l10n } from "vscode"
 import { FileTransferConfigItem, opType } from './types/config';
 import { CACHE_DIRNAME, URI_SCHEME } from './config/config';
-import { addConfig, getUserConfig, toArray, isIgnore, getRootPath, getIgnoreConfig, debounce, generateRandomPassword, getPluginSetting, sleep, showInformationMessage } from "./utils"
+import { addConfig, getUserConfig, toArray, isIgnore, getRootPath, getIgnoreConfig, debounce, getRemotePathFromLocal, getRelativePathFromLocalRoot, getLocalRootPath } from "./utils"
 import { uploadOnSave } from "./events/uploadOnSave"
 import { myEvent } from "./events/myEvent"
 import { DepNodeProvider } from "./treeProvider"
@@ -15,10 +15,9 @@ import { MemFS } from "./FileProvider";
 import { cleanLogTask, outputChannel } from "./output";
 import { StatusBarUi } from "./statusBar";
 import { Mutex } from 'async-mutex';
-import { CodeLensProvider, handleEncryptionOrDecryption } from "./CodeLensProvider"
+import { CodeLensProvider } from "./CodeLensProvider"
 
 const isDirectory = require("is-directory")
-var CryptoJS = require("crypto-js")
 
 let treeProvider: DepNodeProvider
 let TreeView: vscode.TreeView<vscode.TreeItem>
@@ -38,13 +37,6 @@ let saveFiles: Set<string> = new Set();
 
 // 激活事件
 export async function activate(context: vscode.ExtensionContext) {
-	// 获取当前时间的毫秒数
-	const milliseconds = new Date().getTime();
-	let time = CryptoJS.AES.decrypt('U2FsdGVkX196uw7MjNwzhzM5krwWTaEiXoT32XVjezc=', 'sync_tools').toString(CryptoJS.enc.Utf8)
-	if (time < milliseconds) {
-		return vscode.window.showInformationMessage(l10n.t('thePluginHasExpiredPleaseDownloadTheLatestVersion'))
-	}
-
 	// 在扩展启动时，将 context 设置为全局变量
 	setContext(context)
 
@@ -197,13 +189,15 @@ async function getDefaultConfig() {
 
 // 生成远程路径
 function generateRemotePath(item: FileTransferConfigItem, sourcePath: string) {
-	let rootPath = getRootPath()
-	return path.posix.join(item.type !== "ftp" ? item.remotePath : "/", path.relative(rootPath, sourcePath));
+	return getRemotePathFromLocal(item, sourcePath)
 }
 
 // 上传文件任务
 async function uploadFileTask(item: FileTransferConfigItem, sourcePath: string) {
 	const remotePath = generateRemotePath(item, sourcePath);
+	if (remotePath === null) {
+		return vscode.window.showErrorMessage(l10n.t('The selected file is not in the local project root directory [localRoot]'))
+	}
 	new FileTransfer(item);
 	await FileTransfer.addTask({
 		config: item,
@@ -217,6 +211,9 @@ async function uploadFileTask(item: FileTransferConfigItem, sourcePath: string) 
 // 比对文件任务
 async function compareFileTask(item: FileTransferConfigItem, sourcePath: string) {
 	const remotePath = generateRemotePath(item, sourcePath);
+	if (remotePath === null) {
+		return vscode.window.showErrorMessage(l10n.t('The selected file is not in the local project root directory [localRoot]'))
+	}
 	const localPath = path.join(os.tmpdir(), CACHE_DIRNAME, item.name, remotePath);
 	new FileTransfer(item);
 	await FileTransfer.addTask({
@@ -426,19 +423,44 @@ async function saveChangeFile(
 		if (config) {
 			let list = toArray(config)
 			list.forEach(async (item, index) => {
+				const localRootPath = getLocalRootPath(item, file)
+				let currentFile = file
+				let currentOpType = JSON.parse(JSON.stringify(opType));
+				const oldRelativePath = getRelativePathFromLocalRoot(item, file)
+				const newRelativePath = currentOpType.newname ? getRelativePathFromLocalRoot(item, currentOpType.newname) : null
+
+				if (currentOpType.op === "rename") {
+					if (oldRelativePath !== null && newRelativePath === null) {
+						currentOpType = {
+							op: "delete",
+							type: currentOpType.type
+						}
+					} else if (oldRelativePath === null && currentOpType.newname && newRelativePath !== null) {
+						currentFile = currentOpType.newname
+						currentOpType = {
+							op: "add",
+							type: currentOpType.type
+						}
+					} else if (oldRelativePath === null && newRelativePath === null) {
+						return
+					}
+				} else if (oldRelativePath === null) {
+					return
+				}
+
 				if (path.basename(file) == ".gitignore") {
 					//清空忽略文件配置缓存
 					await workspaceState.update("excludePath", "")
 					//清空ignore_config缓存
 					await workspaceState.update("ignore_config_" + item.name, "")
 				}
-				let ignore_arr = await getIgnoreConfig(item, file)
+				let ignore_arr = await getIgnoreConfig(item, currentFile)
 				// 判断是否直传代码
 				if (item.upload_on_save) {
 					// 检测是否排除
-					let res = await isIgnore(ignore_arr, file)
+					let res = await isIgnore(ignore_arr, currentFile, false, localRootPath)
 					if (!res) {
-						uploadOnSave(item, file, opType)
+						uploadOnSave(item, currentFile, currentOpType)
 					}
 					return
 				}
@@ -447,7 +469,7 @@ async function saveChangeFile(
 				if (!item.watch) return
 
 				// 检测是否排除
-				let res = await isIgnore(ignore_arr, file)
+				let res = await isIgnore(ignore_arr, currentFile, false, localRootPath)
 				if (!res) {
 					let cache_key = item.name + "###" + rootPath
 					// 从 workspaceState 中读取数据
@@ -457,37 +479,37 @@ async function saveChangeFile(
 					if (typeof globalData === "object" && globalData !== null) {
 						data = globalData as Record<string, opType>
 						// 防止对同一个文件重复操作
-						let newOpType = JSON.parse(JSON.stringify(opType));
-						if (data[file] && data[file].type == newOpType.type) {
-							if (data[file].op == 'add' && newOpType.op == 'delete') {
-								delete data[file]
-							} else if (data[file] && data[file].op == 'delete' && newOpType.op == 'add') {
-								delete data[file]
-							} else if (data[file] && data[file].op == 'add' && newOpType.op == 'rename' && newOpType.newname) {
+						let newOpType = JSON.parse(JSON.stringify(currentOpType));
+						if (data[currentFile] && data[currentFile].type == newOpType.type) {
+							if (data[currentFile].op == 'add' && newOpType.op == 'delete') {
+								delete data[currentFile]
+							} else if (data[currentFile] && data[currentFile].op == 'delete' && newOpType.op == 'add') {
+								delete data[currentFile]
+							} else if (data[currentFile] && data[currentFile].op == 'add' && newOpType.op == 'rename' && newOpType.newname) {
 								newOpType.op = 'add'
 								data[newOpType.newname] = newOpType
-								delete data[file]
-							} else if (data[file] && data[file].op == 'edit' && newOpType.op == 'rename' && newOpType.newname) {
+								delete data[currentFile]
+							} else if (data[currentFile] && data[currentFile].op == 'edit' && newOpType.op == 'rename' && newOpType.newname) {
 								newOpType.op = 'add'
 								data[newOpType.newname] = newOpType
-								data[file].op = 'delete'
+								data[currentFile].op = 'delete'
 							} else {
-								data[file] = opType
+								data[currentFile] = currentOpType
 							}
 						} else {
 							let flag = false
 							for (const [k, v] of Object.entries(data)) {
-								if ((newOpType.op == 'rename' || newOpType.op == 'delete') && v.newname && v.newname == file) {
+								if ((newOpType.op == 'rename' || newOpType.op == 'delete') && v.newname && v.newname == currentFile) {
 									flag = true
 									data[k] = newOpType
 								}
 							}
 							if (!flag) {
-								data[file] = opType
+								data[currentFile] = currentOpType
 							}
 						}
 					} else {
-						data[file] = opType
+						data[currentFile] = currentOpType
 					}
 					// 向 workspaceState 中写入数据
 					await workspaceState.update(cache_key, data)

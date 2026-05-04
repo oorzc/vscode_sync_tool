@@ -26,6 +26,7 @@ export default class FileTransfer extends EventEmitter {
     uploadTaskNumber: number;
     maxConnections: number;
     rootPath: string;
+    localRootPath: string;
     context: vscode.ExtensionContext;
     mutex: Mutex;
     static timer: any;

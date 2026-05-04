@@ -11,7 +11,7 @@ import { myEvent } from './events/myEvent';
 
 import { Dependency } from "./treeProvider"
 import { FileOpType, FileTransferConfigItem } from "./types/config"
-import { oConsole, getAllFiles, checkSubmitGit, getAllowFiles, verityConfig, getRootPath, throttle } from "./utils"
+import { oConsole, getAllFiles, checkSubmitGit, getAllowFiles, verityConfig, getRootPath, throttle, getLocalRootPath, getRemotePathFromLocal } from "./utils"
 import { getContext } from "./config/globals"
 import { ClientConnectionError, NoWatchFilesError } from "./types/connect"
 import { addLogTask } from "./output"
@@ -30,6 +30,7 @@ export class Deploy {
 	useZip: boolean
 	context: vscode.ExtensionContext
 	rootPath: string
+	localRootPath: string
 	taskList: {
 		task: () => void | Promise<any>
 		type: string
@@ -46,6 +47,7 @@ export class Deploy {
 		this.config = dependency.config;
 		this.context = getContext();
 		this.rootPath = getRootPath()
+		this.localRootPath = getLocalRootPath(this.config)
 		this.zipPath = ""
 		this.useZip = false
 		this.all_upload = false
@@ -164,7 +166,7 @@ export class Deploy {
 		} else {
 			// 非监听模式，上传目标目录
 			for (let v of distPath) {
-				v = path.join(this.rootPath, v)
+				v = path.join(this.localRootPath, v)
 				if (!isDirectory.sync(v)) {
 					this.files.push({
 						file: v,
@@ -215,7 +217,7 @@ export class Deploy {
 		return new Promise<void>((resolve, reject) => {
 			childProcess.exec(
 				`${build}`,
-				{ cwd: this.rootPath, maxBuffer: 1024 * 1024 * 1024 },
+				{ cwd: this.localRootPath, maxBuffer: 1024 * 1024 * 1024 },
 				(e: { message: any } | null) => {
 					if (e === null) {
 						resolve()
@@ -263,17 +265,17 @@ export class Deploy {
 			zlib: { level: 9 }
 		});
 
-		const zipPath = path.join(this.rootPath, this.zipPath);
-		FileTransfer.noUploadFiles.add(zipPath);
+		const zipLocalPath = path.join(this.localRootPath, this.zipPath);
+		FileTransfer.noUploadFiles.add(zipLocalPath);
 
 		try {
-			const output = fs.createWriteStream(zipPath);
+			const output = fs.createWriteStream(zipLocalPath);
 			archive.pipe(output);
 
 			const arr = [];
 			const basePath = remote_file && is_upload_root
-				? path.join(this.rootPath, remote_file)
-				: this.rootPath;
+				? path.join(this.localRootPath, remote_file)
+				: this.localRootPath;
 
 			// 1. 先收集所有需要处理的文件
 			for (const v of this.files) {
@@ -320,7 +322,7 @@ export class Deploy {
 
 			this.useZip = true;
 			setTimeout(() => {
-				FileTransfer.noUploadFiles.delete(zipPath);
+				FileTransfer.noUploadFiles.delete(zipLocalPath);
 			}, 2000);
 
 		} catch (e) {
@@ -389,7 +391,7 @@ export class Deploy {
 		if (this.config.compress && this.useZip) {
 			console.log("上传压缩文件");
 			let remotePath = path.join(this.config.type !== "ftp" ? this.config.remotePath : "", this.zipPath)
-			const localPath = path.join(this.rootPath, this.zipPath)
+			const localPath = path.join(this.localRootPath, this.zipPath)
 
 			if (fs.existsSync(localPath)) {
 				FileTransfer.addTask({
@@ -429,17 +431,19 @@ export class Deploy {
 		}
 		let len = this.config.distPath?.length || 0
 
-		let remotePath = path.join(
-			this.config.type !== "ftp" ? this.config.remotePath : "",
-			path.relative(this.rootPath, v.file)
-		)
+		let remotePath = getRemotePathFromLocal(this.config, v.file)
+		if (!remotePath) {
+			return
+		}
 
 		// 只有一个目录则上传该目录下文件，不包含目录
 		let up_to_root = false
+		let uploadBasePath = ""
 		if (len == 1 && this.config.distPath && this.config.upload_to_root) {
 			up_to_root = true
 
-			let new_path = path.join(this.rootPath, this.config.distPath[0])
+			let new_path = path.join(this.localRootPath, this.config.distPath[0])
+			uploadBasePath = new_path
 			remotePath = path.join(
 				this.config.type !== "ftp" ? this.config.remotePath : "",
 				path.relative(new_path, v.file)
@@ -457,7 +461,7 @@ export class Deploy {
 					if (up_to_root) {
 						remotePath = path.join(
 							this.config.type !== "ftp" ? this.config.remotePath : "",
-							path.relative(this.config.type !== "ftp" ? this.rootPath : "", vv)
+							path.relative(uploadBasePath, vv)
 						)
 					}
 
@@ -486,14 +490,11 @@ export class Deploy {
 			return
 		}
 
-		let remotePath = path.join(
-			this.config.type !== "ftp" ? this.config.remotePath : "",
-			path.relative(this.rootPath, v.opType.newname)
-		)
-		let localPath = path.join(
-			this.config.type !== "ftp" ? this.config.remotePath : "",
-			path.relative(this.rootPath, v.file)
-		)
+		let remotePath = getRemotePathFromLocal(this.config, v.opType.newname)
+		let localPath = getRemotePathFromLocal(this.config, v.file)
+		if (!remotePath || !localPath) {
+			return
+		}
 
 		// 重命名文件
 		await FileTransfer.addTask({
@@ -505,10 +506,10 @@ export class Deploy {
 	}
 
 	async deleteFile(v: FileOpType) {
-		let remotePath: string = path.join(
-			this.config.type !== "ftp" ? this.config.remotePath : "",
-			path.relative(this.rootPath, v.file)
-		)
+		let remotePath = getRemotePathFromLocal(this.config, v.file)
+		if (!remotePath) {
+			return
+		}
 
 		await FileTransfer.addTask({
 			config: this.config,

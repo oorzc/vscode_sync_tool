@@ -14,6 +14,7 @@ export declare class Deploy {
     useZip: boolean;
     context: vscode.ExtensionContext;
     rootPath: string;
+    localRootPath: string;
     taskList: {
         task: () => void | Promise<any>;
         type: string;

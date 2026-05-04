@@ -34,6 +34,7 @@ export interface DeployConfigItem {
     username: string; // 用户名 SFTP
     password?: string; // 密码
     privateKeyPath?: string; // 秘钥地址
+    localRoot?: string; // 本地项目根目录
     proxy?: boolean; // 是否使用代理
     sock?: any;
     watch?: boolean; // 监听上传目录文件变动，如果是前端项目不建议启用，默认true

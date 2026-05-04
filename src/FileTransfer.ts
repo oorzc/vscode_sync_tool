@@ -10,7 +10,7 @@ import { l10n } from 'vscode';
 import * as vscode from "vscode"
 import { EventEmitter } from 'events';
 import { FileTransferConfigItem, Task, TargetTypes, proxyConfigType } from "./types/config";
-import { getRootPath, getAllowFiles, isUpRoot, formatFileSize, getUseTime, getPluginSetting, sleep, getNormalPath, isIgnore } from './utils';
+import { getRootPath, getAllowFiles, isUpRoot, formatFileSize, getUseTime, getPluginSetting, sleep, getNormalPath, isIgnore, getLocalRootPath } from './utils';
 import { SocksClient } from "socks";
 import { SocksProxyType } from "socks/typings/common/constants";
 import { getContext } from "./config/globals";
@@ -37,6 +37,7 @@ export default class FileTransfer extends EventEmitter {
     uploadTaskNumber: number; // 上传数量达到多少时开启并发
     maxConnections: number; // 最大连接数
     rootPath: string
+    localRootPath: string
     context: vscode.ExtensionContext;
     mutex: Mutex;  // 定义互斥锁
     static timer: any = null; // 定时器
@@ -53,6 +54,7 @@ export default class FileTransfer extends EventEmitter {
         let uploadConcurrentLimit = syncConfig.get('uploadConcurrentLimit', 3)
         this.configItem = configItem;
         this.rootPath = getRootPath();
+        this.localRootPath = getLocalRootPath(configItem);
         this.uploadTaskNumber = uploadTaskNumber;
         this.maxConnections = uploadConcurrentLimit;
         this.context = getContext();
@@ -148,9 +150,9 @@ export default class FileTransfer extends EventEmitter {
                         }
 
                         if (task.compare && !task.isDirectory) {
-                            let localPath = path.join(this.rootPath, path.relative(task.config.type == 'ftp' ? "/" : task.config.remotePath, task.remotePath))
+                            let localPath = path.join(this.localRootPath, path.relative(task.config.type == 'ftp' ? "/" : task.config.remotePath, task.remotePath))
                             // 执行对比命令
-                            vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(task.localPath), vscode.Uri.file(localPath), `${l10n.t('Local file')} ↔ ${l10n.t('Remote file')}: ${path.relative(this.rootPath, localPath)}`);
+                            vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(task.localPath), vscode.Uri.file(localPath), `${l10n.t('Local file')} ↔ ${l10n.t('Remote file')}: ${path.relative(this.localRootPath, localPath)}`);
                         }
 
                         // 动态增加并发数
@@ -705,7 +707,7 @@ export default class FileTransfer extends EventEmitter {
                 let localPath = task.localPath
                 if (!fs.existsSync(task.localPath)) {
                     localPath = path.posix.join(
-                        this.rootPath,
+                        this.localRootPath,
                         path.relative(config.type == 'ftp' ? "" : task.config.remotePath, newPath)
                     )
                 }

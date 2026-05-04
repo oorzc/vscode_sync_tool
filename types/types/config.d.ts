@@ -28,6 +28,7 @@ export interface DeployConfigItem {
     username: string;
     password?: string;
     privateKeyPath?: string;
+    localRoot?: string;
     proxy?: boolean;
     sock?: any;
     watch?: boolean;

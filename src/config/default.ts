@@ -8,6 +8,7 @@ export const configText = `{
     "password": "", // 登录密码 (和私钥路径，二选一)
     // "privateKeyPath": "/your_path/id_rsa", // (sftp、ssh配置) 私钥路径 (和登录密码，二选一)，注意：最好不要将密匙，放代码目录下
     // "secretKeyPath": "/your_path/secret_key.txt", //  加密私钥路径，用于加密用户名和密码，注意：最好不要将密匙，放代码目录下
+    "localRoot": "", // (非必填) 本地项目根目录，支持相对工作区根目录或绝对路径，上传时相对路径从这里开始计算
     "proxy": false, // 是否使用代理，默认false
     "upload_on_save": false, // 保存后实时提交，建议单人开发使用，upload_on_save设置为true时，watch、submit_git_before_upload、compress、deleteRemote无效，默认false
     "watch": false, // 监听上传目录文件变动，默认true，如果upload_on_save为true，则此项无效
@@ -39,6 +40,7 @@ const exampleZhText = `{
     //     "password": "password", // 登录密码 (和私钥路径，二选一)
     //     // "privateKeyPath": "/your_path/id_rsa", //  (sftp、ssh配置)私钥路径 (和登录密码，二选一)，注意：最好不要将密匙，放代码目录下
     //     // "secretKeyPath": "/your_path/secret_key.txt", //  加密私钥路径，用于加密用户名和密码，注意：最好不要将密匙，放代码目录下
+    //     "localRoot": "", // (非必填) 本地项目根目录，支持相对工作区根目录或绝对路径，上传时相对路径从这里开始计算
     //     "proxy": false, // 是否使用代理，默认false
     //     "upload_on_save": false, // 保存后实时提交，建议单人开发使用，upload_on_save设置为true时，watch、submit_git_before_upload、compress、deleteRemote无效，默认false
     //     "watch": false, // 监听上传目录文件变动，默认false，如果upload_on_save为true，则此项无效。如果配置了distPath目录，则只监听distPath目录下文件变动

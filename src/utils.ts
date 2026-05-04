@@ -101,6 +101,38 @@ export function getRootPath(file: string = ""): string {
 	// }
 }
 
+export function getLocalRootPath(config?: Partial<DeployConfigItem>, file: string = ""): string {
+	const rootPath = getRootPath(file)
+	const localRoot = config?.localRoot?.trim()
+	if (!localRoot) {
+		return rootPath
+	}
+	return path.isAbsolute(localRoot)
+		? path.resolve(localRoot)
+		: path.resolve(path.join(rootPath, localRoot))
+}
+
+export function getRelativePathFromLocalRoot(config: Partial<DeployConfigItem> | undefined, targetPath: string): string | null {
+	const localRootPath = getLocalRootPath(config, targetPath)
+	const relativePath = path.relative(localRootPath, targetPath)
+	if (!relativePath) {
+		return ""
+	}
+	if (relativePath === ".." || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+		return null
+	}
+	return getNormalPath(relativePath)
+}
+
+export function getRemotePathFromLocal(config: Partial<DeployConfigItem>, targetPath: string): string | null {
+	const relativePath = getRelativePathFromLocalRoot(config, targetPath)
+	if (relativePath === null) {
+		return null
+	}
+	const baseRemotePath = config.type !== "ftp" ? (config.remotePath || "/") : "/"
+	return getNormalPath(path.posix.join(baseRemotePath, relativePath))
+}
+
 /**
  * 语言字符
  */
@@ -168,7 +200,7 @@ export const getAllowFiles = async (
 	view: boolean = false,
 ) => {
 	if (!file) return false
-	let rootPath = getRootPath(file)
+	let rootPath = getLocalRootPath(config, file)
 	let ignore_arr = await getIgnoreConfig(config, file, view)
 	let arr = []
 	//区分根目录和非根目录
@@ -205,8 +237,8 @@ export const getAllowFiles = async (
 }
 
 // 检查是否在排除范围内
-export const isIgnore = async (ignore_arr: string[] = [], file: string, flag: boolean = false) => {
-	let rootPath = getRootPath(file)
+export const isIgnore = async (ignore_arr: string[] = [], file: string, flag: boolean = false, basePath = "") => {
+	let rootPath = basePath || getRootPath(file)
 	let new_file_path = !flag ? getNormalPath(path.relative(rootPath, file)) : getNormalPath(file)
 	let res = ignore_arr.filter((v) => {
 		v = getNormalPath(v)
@@ -249,7 +281,7 @@ export const getIgnoreConfig = (
 	view: boolean = false
 ) => {
 	let context = getContext()
-	let rootPath = getRootPath(file)
+	let rootPath = getLocalRootPath(config, file)
 
 	let name = config.name
 	//获取插件配置
@@ -787,6 +819,9 @@ export const verityConfig = async (config: DeployConfigItem) => {
 	}
 	if (type != 'ftp' && !remotePath) {
 		throw new Error(l10n.t('Please configure server file directory [remotePath]'))
+	}
+	if (config.localRoot && !fs.existsSync(getLocalRootPath(config))) {
+		throw new Error(l10n.t('Please configure a valid local project root directory [localRoot]'))
 	}
 }
 

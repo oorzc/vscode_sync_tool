@@ -11,7 +11,7 @@ import { addLogTask, updateTaskProgress } from './output';
 import { CACHE_DIRNAME, URI_SCHEME } from './config/config';
 import { FileTransferConfigItem, Task } from './types/config';
 import { l10n, TreeItem, ThemeIcon, TreeItemCollapsibleState, ProviderResult } from 'vscode';
-import { toArray, getUserConfig, getRootPath, inputMsg, debounce, sleep, getUseTime, formatFileSize, getPluginSetting, showInformationMessage, splitPath, getParentPath, sortFiles, isValidLinuxPermission, permissionsToOctal, getNormalPath } from "./utils";
+import { toArray, getUserConfig, getRootPath, inputMsg, debounce, sleep, getUseTime, formatFileSize, getPluginSetting, showInformationMessage, splitPath, getParentPath, sortFiles, isValidLinuxPermission, permissionsToOctal, getNormalPath, getLocalRootPath } from "./utils";
 import { NoWatchFilesError } from './types/connect';
 
 // 记录是否拖放
@@ -29,8 +29,8 @@ class LoadingNode extends TreeItem {
 		super("Loading...", TreeItemCollapsibleState.None);
 		const iconPath = path.join(__filename, '..', '..', 'static', 'loading.gif')
 		this.iconPath = {
-			light: iconPath,  // 适用于浅色主题
-			dark: iconPath    // 适用于深色主题
+			light: vscode.Uri.file(iconPath),  // 适用于浅色主题
+			dark: vscode.Uri.file(iconPath)    // 适用于深色主题
 		};
 		this.contextValue = "loading";
 	}
@@ -197,7 +197,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 				if (!showConfirm && confirmMoveOrUpload) {
 					let msg = len > 1 ? l10n.t('multiple files or folders') : ""
 					let res = await showInformationMessage(
-						l10n.t(`Are you sure you want to upload {0} {1} to the {2} directory?`, [localPath, msg, getNormalPath(remotePath)]),
+						l10n.t('Are you sure you want to upload {0} {1} to the {2} directory?', localPath, msg, getNormalPath(remotePath)),
 						l10n.t('Confirm'),
 						l10n.t('Cancel')
 					)
@@ -260,7 +260,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 					if (!showConfirm && confirmMoveOrUpload) {
 						let msg = len2 > 1 ? l10n.t('multiple files or folders') : ""
 						let res = await showInformationMessage(
-							l10n.t(`Are you sure you want to move {0} {1} to the {2} directory?`, [node.realPath, msg, getNormalPath(remotePath)]),
+							l10n.t('Are you sure you want to move {0} {1} to the {2} directory?', node.realPath, msg, getNormalPath(remotePath)),
 							l10n.t('Confirm'),
 							l10n.t('Cancel')
 						)
@@ -477,16 +477,16 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 				case 'start_sync':
 					item.iconPath = item.isRun ? new ThemeIcon("vm-active") : new ThemeIcon("vm-outline");
 					item.iconPath = {
-						dark: path.join(__filename, '..', '..', 'static', 'sync.svg'),  // 适用于浅色主题
-						light: path.join(__filename, '..', '..', 'static', 'sync_dark.svg')    // 适用于深色主题
+						dark: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync.svg')),  // 适用于浅色主题
+						light: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync_dark.svg'))    // 适用于深色主题
 					};
 					item.contextValue = "tools_sync"
 					break;
 				case 'sync':
 					item.iconPath = item.isRun ? new ThemeIcon("vm-active") : new ThemeIcon("vm-outline");
 					item.iconPath = {
-						dark: path.join(__filename, '..', '..', 'static', 'sync.svg'),  // 适用于浅色主题
-						light: path.join(__filename, '..', '..', 'static', 'sync_dark.svg')    // 适用于深色主题
+						dark: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync.svg')),  // 适用于浅色主题
+						light: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync_dark.svg'))    // 适用于深色主题
 					};
 					item.contextValue = "tools_sync"
 					this._onDidChangeTreeData.fire();
@@ -508,8 +508,8 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 					break;
 				case 'restart_sync':
 					item.iconPath = {
-						dark: path.join(__filename, '..', '..', 'static', 'sync.svg'),  // 适用于浅色主题
-						light: path.join(__filename, '..', '..', 'static', 'sync_dark.svg')    // 适用于深色主题
+						dark: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync.svg')),  // 适用于浅色主题
+						light: vscode.Uri.file(path.join(__filename, '..', '..', 'static', 'sync_dark.svg'))    // 适用于深色主题
 					};
 					item.contextValue = "tools_sync"
 					FileTransfer.changeAsyncStatus(item.config.name, 'restart')
@@ -641,13 +641,13 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 				let cache_key = item.name + '###' + this.rootPath
 				let newGlobalData = workspaceState.get(cache_key);
 				// let tooltip = `服务器：${item.name} 地址：${item.config.host}`;
-				let tooltip = l10n.t('Server: {0}   Address: {1}', [item.name, item.host]);
+				let tooltip = l10n.t('Server: {0}   Address: {1}', item.name, item.host);
 				let description = item.host;
 
 				if (typeof newGlobalData === 'object' && newGlobalData !== null) {
 					let count = Object.keys(newGlobalData).length
 					if (count) {
-						tooltip = l10n.t('Server: {0}   Address: {1}   Not uploaded: {2}', [item.name, item.host, count]);
+						tooltip = l10n.t('Server: {0}   Address: {1}   Not uploaded: {2}', item.name, item.host, count);
 						description = count ? `(${count}) ${item.host}` : `${item.host}`;
 					}
 					this.count += count
@@ -793,7 +793,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 			const openFileSizeLimit = syncConfig.get<number>("openFileSizeLimit", 5)
 			if (obj.file.size > openFileSizeLimit * 1024 * 1024) {
 				let res = await showInformationMessage(
-					l10n.t("The file size is {0}, exceeding the limit ({1} M). Are you sure you want to open it?", [formatFileSize(obj.file.size), openFileSizeLimit]),
+					l10n.t('The file size is {0}, exceeding the limit ({1} M). Are you sure you want to open it?', formatFileSize(obj.file.size), openFileSizeLimit),
 					l10n.t('Confirm'),
 					l10n.t('Cancel')
 				)
@@ -1033,7 +1033,8 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 	}
 
 	async downloadFile(obj: Dependency | RepositoryFileNode) {
-		let localPath = path.join(obj.config.downloadPath || this.rootPath, obj.config.type == 'ftp' ? obj.realPath : path.relative(obj.config.remotePath, obj.realPath))
+		const localRootPath = getLocalRootPath(obj.config)
+		let localPath = path.join(obj.config.downloadPath || localRootPath, obj.config.type == 'ftp' ? obj.realPath : path.relative(obj.config.remotePath, obj.realPath))
 		await FileTransfer.addTask({
 			config: obj.config,
 			localPath: localPath,
@@ -1045,9 +1046,10 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 	}
 
 	async compareFile(obj: RepositoryFileNode) {
-		let localPath = path.join(obj.config.downloadPath || this.rootPath, obj.config.type == 'ftp' ? obj.realPath : path.relative(obj.config.remotePath, obj.realPath))
+		const localRootPath = getLocalRootPath(obj.config)
+		let localPath = path.join(obj.config.downloadPath || localRootPath, obj.config.type == 'ftp' ? obj.realPath : path.relative(obj.config.remotePath, obj.realPath))
 		if (!fs.existsSync(localPath)) {
-			return vscode.window.showErrorMessage(`${l10n.t('Local file {0} does not exist', [localPath])}`);
+			return vscode.window.showErrorMessage(l10n.t('Local file {0} does not exist', localPath));
 		}
 		await this.openResource(obj, localPath);
 	}
@@ -1110,7 +1112,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 
 	async deleteFile(obj: RepositoryFileNode) {
 		let res = await showInformationMessage(
-			`${l10n.t('Are you sure you want to delete {0}?', [obj.realPath])}`,
+			l10n.t('Are you sure you want to delete {0}?', obj.realPath),
 			l10n.t('Confirm'),
 			l10n.t('Cancel')
 		)
@@ -1176,7 +1178,7 @@ export class DepNodeProvider implements vscode.TreeDataProvider<TreeItem>, vscod
 					num += count
 				}
 				v.description = count ? `(${count}) ${v.config.host}` : `${v.config.host}`;
-				let tooltip = l10n.t('Server: {0}   Address: {1}   Not uploaded: {2}', [v.label, v.config.host, count]);
+				let tooltip = l10n.t('Server: {0}   Address: {1}   Not uploaded: {2}', v.config.name, v.config.host, count);
 				v.tooltip = tooltip;
 			})
 

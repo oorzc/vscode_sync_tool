@@ -1,6 +1,6 @@
 const isDirectory = require("is-directory")
 import path from "path"
-import { getAllowFiles, getRootPath, verityConfig, isUpRoot } from "../utils"
+import { getAllowFiles, verityConfig, isUpRoot, getLocalRootPath, getRemotePathFromLocal } from "../utils"
 import * as vscode from "vscode"
 import { opType, FileTransferConfigItem } from "../types/config"
 import FileTransfer from "../FileTransfer"
@@ -11,20 +11,14 @@ export const uploadOnSave = async (
 	file: string,
 	opType: opType
 ) => {
-	let rootPath = getRootPath()
+	let rootPath = getLocalRootPath(config, file)
 	let fileTransfer = new FileTransfer(config)
 	let client = await fileTransfer.getClient(config, true)
 	if (!client) return
 	try {
-		const { type } = config
 		await verityConfig(config)
-		let remoteFilePath = path.relative(rootPath, file)
-		if (type != 'ftp') {
-			remoteFilePath = path.join(
-				config.remotePath,
-				path.relative(rootPath, file)
-			)
-		}
+		let remoteFilePath = getRemotePathFromLocal(config, file)
+		if (!remoteFilePath) return
 		switch (opType.op) {
 			case "add":
 			case "edit":
@@ -35,22 +29,15 @@ export const uploadOnSave = async (
 					return
 				}
 				// 重命名文件
-				let remotePath = path.relative(rootPath, opType.newname)
-				let localPath = path.relative(rootPath, file)
-				if (config.type !== 'ftp') {
-					remotePath = path.join(
-						config.remotePath,
-						path.relative(rootPath, opType.newname)
-					)
-					localPath = path.join(
-						config.remotePath,
-						path.relative(rootPath, file)
-					)
+				let remotePath = getRemotePathFromLocal(config, opType.newname)
+				let localPath = getRemotePathFromLocal(config, file)
+				if (!remotePath || !localPath) {
+					return
 				}
 				await FileTransfer.addTask({
 					config: config,
 					localPath,
-					remotePath: path.posix.join('/', remotePath),
+					remotePath,
 					fileType: opType.type,
 					operationType: 'rename'
 				}, true);
@@ -99,10 +86,11 @@ export const uploadOnSave = async (
 							path.relative(rootPath, vv)
 						)
 					} else {
-						remotePath = path.relative(
-							config.type !== 'ftp' ? config.remotePath : "",
-							path.relative(rootPath, vv)
-						)
+						const currentRemotePath = getRemotePathFromLocal(config, vv)
+						if (!currentRemotePath) {
+							continue
+						}
+						remotePath = currentRemotePath
 					}
 					await FileTransfer.addTask({
 						config: config,

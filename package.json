@@ -1,5 +1,5 @@
 {
-  "name": "ssh-tools",
+  "name": "sync-tools",
   "displayName": "FTP/SFTP/SSH Sync Tool",
   "publisher": "oorzc",
   "description": "%SyncTools.title%",
@@ -463,13 +463,11 @@
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
     "eslint": "^8.24.0",
-    "javascript-obfuscator": "^4.1.1",
     "mocha": "^10.0.0",
     "ts-loader": "^9.2.5",
     "typescript": "^4.4.4",
     "webpack": "^5.52.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-obfuscator": "^3.5.1"
+    "webpack-cli": "^4.8.0"
   },
   "dependencies": {
     "archiver": "^6.0.1",
